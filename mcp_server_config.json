@@ -1,0 +1,13 @@
+{
+    "servers": {
+        "mcp-webex-tools-http": {
+            "type": "http",
+            "url": "https://pandas.eng.webex.com/mcp/",
+            "headers": {
+                "VERSION": "1.2",
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive"
+            }
+        }
+    }
+}
