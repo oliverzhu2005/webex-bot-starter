@@ -2,86 +2,149 @@
 
 This is a Webex Bot powered by the **Model Context Protocol (MCP)** and an LLM (OpenAI/Compatible). It acts as a troubleshooting assistant that can connect to an MCP server to retrieve logs, analyze issues, and provide technical support using a "Chain of Thought" reasoning process.
 
-## Prerequisites
+## 🚀 Key Features
 
--   **Node.js**: **v20 (LTS)** recommended.
-    -   *Note: Node.js v22+ may cause issues with the current Webex SDK.*
--   **Webex Bot Token**: From [developer.webex.com](https://developer.webex.com/my-apps/new/bot).
--   **MCP Server**: A running MCP server (HTTP/SSE) to provide tools.
--   **LLM Provider**: OpenAI API Key or compatible service (e.g., standard OpenAI or Cisco internal clouds).
+*   **MCP Client Integration**: Connects to MCP servers via SSE (Server-Sent Events) to discover and utilize tools dynamically.
+*   **Webex Integration**: Responds to messages in Webex Spaces or 1:1 chats.
+*   **Chain of Thought**: Uses advanced prompting (defined in `SKILL.md`) to plan, execute, and analyze troubleshooting steps.
+*   **Robust Error Handling**: Auto-retries connections and handles JSON-RPC protocols over HTTP/SSE.
 
-## Installation
+## 📋 Prerequisites
 
-1.  **Clone/Download** this repository.
+*   **Node.js**: **v20 (LTS)** is strictly required.
+    *   *Warning*: Node.js v22+ is currently **incompatible** with the `webex-node-bot-framework` (causes `TypeError: Cannot set property navigator`).
+*   **Webex Bot Token**: Create a bot at [developer.webex.com](https://developer.webex.com/my-apps/new/bot).
+*   **MCP Server**: Access to a running MCP server (HTTP/SSE).
+*   **LLM Provider**: OpenAI API Key or a compatible service (e.g., vLLM, internal proxy).
+
+---
+
+## 🛠️ Installation & Setup
+
+### 1. Local Setup
+
+1.  **Clone the Repository**:
+    ```bash
+    git clone https://github.com/oliverzhu2005/webex-bot-starter.git
+    cd webex-bot-starter
+    ```
+
 2.  **Install Dependencies**:
     ```bash
     npm install
     ```
 
-## Configuration
+3.  **Configuration**:
+    Create a `.env` file in the root directory:
+    ```ini
+    # Webex Identity
+    BOTTOKEN=your_webex_bot_token_starting_with_M...
 
-### 1. Environment Variables (`.env`)
-Create a `.env` file in the root directory with the following variables:
+    # LLM Provider (OpenAI Compatible)
+    CI_TOKEN=your_api_key_here
+    LLM_BASE_URL=https://api.openai.com/v1  # or your proxy url
+    LLM_MODEL=gpt-4o                        # or your model name
+    
+    # Optional
+    CISCO_APP_NAME=mcp-troubleshooter
+    ```
 
-```ini
-# Webex Bot Token
-BOTTOKEN=your_webex_bot_token_here
-
-# LLM Configuration (OpenAI Compatible)
-CI_TOKEN=your_openai_or_proxy_api_key
-LLM_BASE_URL=https://api.openai.com/v1  # Or your internal proxy URL
-LLM_MODEL=gpt-4                         # Or your preferred model
-
-# Optional Identity
-CISCO_APP_NAME=mcp-troubleshooter
-```
-
-### 2. MCP Server Config (`mcp_server_config.json`)
-Ensure `mcp_server_config.json` exists in the root and points to your MCP server:
-
-```json
-{
-    "servers": {
-        "mcp-webex-tools-http": {
-            "type": "http",
-            "url": "https://your-mcp-server.example.com/mcp/",
-            "headers": {
-                "VERSION": "1.2",
-                "Connection": "keep-alive"
-            }
+4.  **MCP Server Config**:
+    Ensure `mcp_server_config.json` is present in the root. This file tells the bot where to find the MCP tools.
+    ```json
+    {
+      "servers": {
+        "mcp-server-1": {
+          "type": "http",
+          "url": "https://your-mcp-server-url/mcp/",
+          "headers": { ... }
         }
+      }
     }
-}
-```
+    ```
 
-### 3. Bot Skill Only (`skills/troubleshooter/SKILL.md`)
-The system prompt and behavior are defined here. You can modify the `<system_instructions>` or time range rules in this file.
+5.  **Run the Bot**:
+    ```bash
+    npm start
+    ```
 
-## Running the Bot
+---
 
-Start the bot using:
+## ☁️ Deployment on Remote Server (e.g., Ubuntu)
 
-```bash
-npm start
-```
+If you are deploying this to a server/VM:
 
-You should see logs indicating the framework has started and the MCP session is connected:
-```text
-Loaded MCP URL: ...
-Loaded System Prompt from ...
-framework is all fired up!
-🔌 Connecting to MCP Server...
-✨ MCP Session Connected via SSE
-```
+1.  **Clone to the specific folder**:
+    ```bash
+    git clone https://github.com/oliverzhu2005/webex-bot-starter.git
+    cd webex-bot-starter
+    ```
+    *Important: Do not run `npm install` in your home directory (`~`). Always `cd` into the project folder first.*
 
-## Usage
+2.  **Install tools (if missing)**:
+    ```bash
+    sudo apt update
+    sudo apt install nodejs npm
+    # Ensure you are on Node v20. If not, use nvm to install v20.
+    ```
 
-1.  Add the bot to a Webex Space or Direct Message it.
-2.  Ask a troubleshooting question, e.g.:
-    *   "Check logs for trackingId abc-123"
-    *   "Why did the meeting fail?"
-3.  The bot will:
-    *   Think (Chain of Thought).
-    *   Call MCP tools (via the configured server).
-    *   Analyze the results.
-    *   Provide a summary.
+3.  **Setup Environment**:
+    Create your `.env` file on the server using `nano .env` or `vi .env`.
+
+4.  **Start with Process Manager (Optional)**:
+    Use `pm2` to keep the bot running:
+    ```bash
+    npm install -g pm2
+    pm2 start index.js --name "webex-mcp-bot"
+    pm2 save
+    ```
+
+---
+
+## 💡 Usage
+
+1.  Add the bot to a Webex Space or send it a Direct Message.
+2.  Mention the bot (in a space) or just type (in DM).
+3.  **Example Prompts**:
+    *   *"Check the logs for user janedoe@example.com having crashing issues."*
+    *   *"Search for tracking ID 12345-67890."*
+    *   *"Why is the meeting audio failing for the last 3 hours?"*
+
+The bot will:
+1.  Acknowledge the request.
+2.  Use the `SKILL.md` system prompt to "think" about the problem.
+3.  Call the necessary MCP tools (search logs, analyze patterns).
+4.  Return a summarized answer.
+
+---
+
+## ❗ Troubleshooting & Common Issues
+
+### 1. `TypeError: Cannot set property navigator...`
+*   **Cause**: You are running Node.js v22 or newer.
+*   **Fix**: Downgrade to Node.js v20.
+    ```bash
+    nvm install 20
+    nvm use 20
+    ```
+
+### 2. Bot connects but Tools fail (`406 Not Acceptable`)
+*   **Cause**: The MCP server requires SSE (Server-Sent Events) but the client didn't send the correct headers.
+*   **Fix**: This is already fixed in the latest code (`lib/mcpClient.js`) by enforcing `Accept: text/event-stream`. Ensure you have the latest version.
+
+### 3. Git Push Fails (`403 Permission Denied`)
+*   **Cause**: Using password authentication for HTTPS.
+*   **Fix**: Use a Personal Access Token (PAT) or SSH keys.
+    ```bash
+    git push https://<YOUR_PAT>@github.com/oliverzhu2005/webex-bot-starter.git main
+    ```
+
+---
+
+## 📂 Project Structure
+
+*   `index.js`: Main entry point. Initializes Webex Framework and MCP Client.
+*   `lib/mcpClient.js`: Custom MCP Client implementation handling SSE and JSON-RPC.
+*   `lib/botLogic.js`: Handles the troubleshooting logic and LLM interaction.
+*   `skills/troubleshooter/SKILL.md`: The "Brain" of the bot – contains the system prompt and reasoning rules.
+*   `mcp_server_config.json`: Configuration for upstream MCP servers.
