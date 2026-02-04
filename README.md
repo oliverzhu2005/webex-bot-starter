@@ -2,6 +2,8 @@
 
 This is a Webex Bot powered by the **Model Context Protocol (MCP)** and an LLM (OpenAI/Compatible). It acts as a troubleshooting assistant that can connect to an MCP server to retrieve logs, analyze issues, and provide technical support using a "Chain of Thought" reasoning process.
 
+> **Acknowledgement**: The bot framework used in this project is based on [Webex Bot Starter](https://github.com/WebexSamples/webex-bot-starter).
+
 ## 🚀 Key Features
 
 *   **MCP Client Integration**: Connects to MCP servers via SSE (Server-Sent Events) to discover and utilize tools dynamically.
@@ -115,29 +117,6 @@ The bot will:
 2.  Use the `SKILL.md` system prompt to "think" about the problem.
 3.  Call the necessary MCP tools (search logs, analyze patterns).
 4.  Return a summarized answer.
-
----
-
-## ❗ Troubleshooting & Common Issues
-
-### 1. `TypeError: Cannot set property navigator...`
-*   **Cause**: You are running Node.js v22 or newer.
-*   **Fix**: Downgrade to Node.js v20.
-    ```bash
-    nvm install 20
-    nvm use 20
-    ```
-
-### 2. Bot connects but Tools fail (`406 Not Acceptable`)
-*   **Cause**: The MCP server requires SSE (Server-Sent Events) but the client didn't send the correct headers.
-*   **Fix**: This is already fixed in the latest code (`lib/mcpClient.js`) by enforcing `Accept: text/event-stream`. Ensure you have the latest version.
-
-### 3. Git Push Fails (`403 Permission Denied`)
-*   **Cause**: Using password authentication for HTTPS.
-*   **Fix**: Use a Personal Access Token (PAT) or SSH keys.
-    ```bash
-    git push https://<YOUR_PAT>@github.com/oliverzhu2005/webex-bot-starter.git main
-    ```
 
 ---
 
